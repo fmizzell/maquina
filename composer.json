@@ -1,0 +1,20 @@
+{
+    "name": "fmizzell/maquina",
+    "type": "library",
+    "require-dev": {
+        "phpunit/phpunit": "^7.4"
+    },
+    "license": "GPL-3",
+    "authors": [
+        {
+            "name": "fmizzell",
+            "email": "fmizzell@1312210.no-reply.drupal.org"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Maquina\\": "src/"
+        }
+    }
+}
