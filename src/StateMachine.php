@@ -121,6 +121,10 @@ class StateMachine {
     $this->letTheStateMachineWork($input);
   }
 
+  public function getCurrentState() {
+    return $this->currentState;
+  }
+
   /**
    * Private.
    */
