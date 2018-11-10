@@ -3,16 +3,46 @@
 class StateMachineTest extends \PHPUnit\Framework\TestCase {
 
   /**
-   * https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Turnstile_state_machine_colored.svg/330px-Turnstile_state_machine_colored.svg.png
+   * @var \Maquina\StateMachine
    */
-  public function testTurstile() {
-    $counter = new Counter();
+  private $stateMachine;
 
+  public function setUp() {
+    parent::setUp();
     $states = ['Locked', "Un-locked"];
     $inputs = ['Push', 'Coin'];
 
-    $sm = new \Maquina\StateMachine($states, $inputs);
+    $this->stateMachine = new \Maquina\StateMachine($states, $inputs);
+  }
 
+  public function testLackOfInitialState() {
+    $this->expectExceptionMessage("An initial state must be provided to start processing");
+    $this->stateMachine->processInput("Push");
+  }
+
+  public function testInitialStateException() {
+    $this->expectExceptionMessage("Invalid initial state Blah");
+    $this->stateMachine->addInitialState("Blah");
+  }
+
+  public function testInvalidInputException() {
+    $this->expectExceptionMessage("Invalid Input meh");
+    $this->stateMachine->addInitialState('Locked');
+    $this->stateMachine->processInput("meh");
+  }
+
+  public function testBadCallableExeption() {
+    $counter = new Counter();
+    $this->expectExceptionMessage('Unable to call callable [{},"decrease"]');
+    $this->stateMachine->addInitialState('Locked');
+    $this->stateMachine->addTransition("Locked", "Push", "Locked", [$counter, "decrease"]);
+    $this->stateMachine->processInput("Push");
+  }
+
+  public function testTurnstile() {
+    $sm = $this->stateMachine;
+
+    $counter = new Counter();
     $sm->addInitialState('Locked');
 
     $sm->addTransition("Locked", "Push", "Locked");
@@ -43,6 +73,10 @@ class Counter {
 
   public function increment() {
     $this->counter += 1;
+  }
+
+  private function decrease() {
+    $this->counter -= 1;
   }
 
   public function getCounter() {

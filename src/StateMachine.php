@@ -209,11 +209,12 @@ class StateMachine {
    */
   private function executeTransitionCallable($input, $next_state) {
     $callable = $this->transitions[$this->currentState][$input][$next_state];
-    if (!is_bool($callable)) {
-      if (!call_user_func($callable, $input) == FALSE) {
-        $json = json_encode($callable);
-        throw new \Exception("Unable to call callable {$json}");
-      }
+    if (is_callable($callable)) {
+      call_user_func($callable, $input);
+    }
+    elseif(!is_bool($callable)) {
+      $json = json_encode($callable);
+      throw new \Exception("Unable to call callable {$json}");
     }
   }
 
