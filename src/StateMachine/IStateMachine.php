@@ -2,17 +2,16 @@
 
 namespace Maquina\StateMachine;
 
-
 interface IStateMachine
 {
-  public function addTransition(string $current_state, array $inputs, string $next_state);
-  public function addEndState(string $state);
+    public function addTransition(string $current_state, array $inputs, string $next_state);
+    public function addEndState(string $state);
 
-  public function processInput(string $input);
+    public function processInput(string $input);
 
-  public function isCurrentlyAtAnEndState(): bool;
+    public function isCurrentlyAtAnEndState(): bool;
 
-  public function getCurrentState():string;
+    public function getCurrentState():string;
 
-  public function reset();
+    public function reset();
 }
