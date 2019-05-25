@@ -2,6 +2,8 @@
 
 namespace Maquina\StateMachine;
 
+use Maquina\Capture;
+
 /**
  * Class StateMachine.
  *
@@ -10,22 +12,25 @@ namespace Maquina\StateMachine;
  */
 class Machine implements IStateMachine
 {
+    use Capture;
 
-    private $initialState;
+    private $initialStates;
 
     private $transitions = [];
 
-    protected $currentState = null;
+    protected $currentStates = null;
 
     private $endStates = [];
+
+    private $halted = false;
 
   /**
    * Constructor.
    */
-    public function __construct(string $initial_state)
+    public function __construct(array $initial_states)
     {
-        $this->initialState = $initial_state;
-        $this->currentState = $initial_state;
+        $this->initialStates = $initial_states;
+        $this->currentStates = $this->initialStates;
     }
 
   /**
@@ -48,11 +53,7 @@ class Machine implements IStateMachine
 
     public function isCurrentlyAtAnEndState(): bool
     {
-        if (empty($this->endStates)) {
-            throw new \Exception("This is an infinite machine");
-        }
-
-        return in_array($this->currentState, $this->endStates);
+        return $this->halted;
     }
 
   /**
@@ -61,8 +62,16 @@ class Machine implements IStateMachine
     public function processInput(string $input)
     {
         if ($this->transitionIsValid($input)) {
-            $next_state = $this->getNextState($input);
-            $this->currentState = $next_state;
+            $next_states = $this->getNextStates($input);
+            $this->currentStates = $next_states;
+            $this->handleMatch($input);
+
+            $this->halted = false;
+            foreach ($this->currentStates as $current_state) {
+                if (in_array($current_state, $this->endStates)) {
+                    $this->halted = true;
+                }
+            }
         } else {
             throw new \Exception("Invalid Input {$input}");
         }
@@ -70,12 +79,13 @@ class Machine implements IStateMachine
 
     public function reset()
     {
-        $this->currentState = $this->initialState;
+        $this->currentStates = $this->initialStates;
+        $this->resetMatch();
     }
 
-    public function getCurrentState(): string
+    public function getCurrentStates(): array
     {
-        return $this->currentState;
+        return $this->currentStates;
     }
 
   /**
@@ -83,15 +93,28 @@ class Machine implements IStateMachine
    */
     private function transitionIsValid($input)
     {
-        return isset($this->transitions[$this->currentState][$input]);
+        foreach ($this->currentStates as $current_state) {
+            if (isset($this->transitions[$current_state][$input])) {
+                return true;
+            }
+        }
+        return false;
     }
 
   /**
    * Private.
    */
-    private function getNextState($input)
+    private function getNextStates($input)
     {
-        $keys = array_keys($this->transitions[$this->currentState][$input]);
-        return $keys[0];
+        $next_states = [];
+
+        foreach ($this->currentStates as $current_state) {
+            if (isset($this->transitions[$current_state][$input])) {
+                $keys = array_keys($this->transitions[$current_state][$input]);
+                $next_states = array_merge($next_states, $keys);
+            }
+        }
+
+        return $next_states;
     }
 }

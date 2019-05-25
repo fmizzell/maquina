@@ -11,7 +11,7 @@ interface IStateMachine
 
     public function isCurrentlyAtAnEndState(): bool;
 
-    public function getCurrentState():string;
+    public function getCurrentStates():array;
 
     public function reset();
 }

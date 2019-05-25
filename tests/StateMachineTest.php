@@ -2,58 +2,74 @@
 
 use Maquina\StateMachine\Machine;
 
-class StateMachineTest extends \PHPUnit\Framework\TestCase {
+// @codingStandardsIgnoreStart
+class StateMachineTest extends \PHPUnit\Framework\TestCase
+// @codingStandardsIgnoreEnd
+{
 
   /**
-   * @var \Maquina\Machine
+   * @var Machine
    */
-  private $stateMachine;
+    private $stateMachine;
 
-  public function setUp() {
-    parent::setUp();
+    public function setUp()
+    {
+        parent::setUp();
 
-    $machine = new Machine("Locked");
-    $machine->addTransition("Locked", ["Push"], "Locked");
-    $machine->addTransition("Locked", ["Coin"], "Un-locked");
-    $machine->addTransition("Un-locked", ["Coin"], "Un-locked");
-    $machine->addTransition("Un-locked", ["Push"], "Locked");
-    $this->stateMachine = $machine;
-  }
+        $machine = new Machine(["Locked"]);
+        $machine->addTransition("Locked", ["Push"], "Locked");
+        $machine->addTransition("Locked", ["Coin"], "Un-locked");
+        $machine->addTransition("Un-locked", ["Coin"], "Un-locked");
+        $machine->addTransition("Un-locked", ["Push"], "Locked");
+        $machine->noCapture();
 
-  public function testInvalidInputException() {
-    $this->expectExceptionMessage("Invalid Input meh");
-    $this->stateMachine->processInput("meh");
-  }
+        $this->stateMachine = $machine;
+    }
 
-  public function testTurnstile() {
-    $sm = $this->stateMachine;
+    public function testInvalidInputException()
+    {
+        $this->expectExceptionMessage("Invalid Input meh");
+        $this->stateMachine->processInput("meh");
+    }
 
-    $sm->processInput("Push");
-    $this->assertEquals("Locked", $sm->getCurrentState());
+    public function testTurnstile()
+    {
+        $sm = $this->stateMachine;
 
-    $sm->processInput("Coin");
-    $this->assertEquals("Un-locked", $sm->getCurrentState());
+        $sm->processInput("Push");
+        $this->assertEquals("Locked", $sm->getCurrentStates()[0]);
 
-    $sm->processInput("Coin");
-    $this->assertEquals("Un-locked", $sm->getCurrentState());
+        $sm->processInput("Coin");
+        $this->assertEquals("Un-locked", $sm->getCurrentStates()[0]);
 
-    $sm->processInput("Push");
-    $this->assertEquals("Locked", $sm->getCurrentState());
-  }
+        $sm->processInput("Coin");
+        $this->assertEquals("Un-locked", $sm->getCurrentStates()[0]);
+
+        $sm->processInput("Push");
+        $this->assertEquals("Locked", $sm->getCurrentStates()[0]);
+
+        $this->assertEmpty($sm->getMatch());
+    }
 }
 
-class Counter {
-  private $counter = 0;
+// @codingStandardsIgnoreStart
+class Counter
+{
+    private $counter = 0;
 
-  public function increment() {
-    $this->counter += 1;
-  }
+    public function increment()
+    {
+        $this->counter += 1;
+    }
 
-  private function decrease() {
-    $this->counter -= 1;
-  }
+    private function decrease()
+    {
+        $this->counter -= 1;
+    }
 
-  public function getCounter() {
-    return $this->counter;
-  }
+    public function getCounter()
+    {
+        return $this->counter;
+    }
 }
+// @codingStandardsIgnoreEnd

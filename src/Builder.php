@@ -23,7 +23,7 @@ class Builder
         $chars = str_split($string);
         $end_state = count($chars);
 
-        $machine = new Machine(0);
+        $machine = new Machine([0]);
         $machine->addEndState($end_state);
 
         if ($mode == self::EMPTY) {
@@ -48,7 +48,7 @@ class Builder
         $chars = str_split($string);
         $end_state = count($chars) - 1;
 
-        $machine = new Machine(0);
+        $machine = new Machine([0]);
         $machine->addEndState($end_state);
 
         for ($i = 1; $i <= $end_state + 1; $i++) {
@@ -73,7 +73,7 @@ class Builder
         $chars = str_split($string);
         $chars = array_unique($chars);
 
-        $machine = new Machine(0);
+        $machine = new Machine([0]);
 
         if ($mode == self::ONE_OR_MORE) {
             $machine->addEndState(1);

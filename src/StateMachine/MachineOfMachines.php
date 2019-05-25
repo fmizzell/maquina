@@ -13,25 +13,37 @@ class MachineOfMachines extends Machine implements IStateMachine
 
     public function processInput(string $input)
     {
-      // Feed the current machine.
+        $got_machine = false;
+        $machine_error = false;
+        $machine_finished = false;
 
-        try {
-          /* @var $machine \Maquina\StateMachine\IStateMachine */
-            $machine = $this->getCurrentMachine();
-        } catch (\Exception $e) {
-            $machine = null;
+        $machines = [];
+        $errors = [];
+
+        foreach ($this->currentStates as $current_state) {
+            $machine = $this->getStateMachine($current_state);
+            if ($machine) {
+                $machines[] = $machine;
+                $got_machine = true;
+                try {
+                    $machine->processInput($input);
+                } catch (\Exception $e) {
+                    $errors[] = true;
+                  // The current machine could not handle the input... transition.
+                    if ($machine->isCurrentlyAtAnEndState()) {
+                        $machine_finished = true;
+                    }
+                    $machine->reset();
+                }
+            }
         }
 
-        if (isset($machine)) {
-            try {
-                $machine->processInput($input);
-            } catch (\Exception $e) {
-                // The current machine could not handle the input... transition.
-                if ($machine->isCurrentlyAtAnEndState()) {
+        if ($got_machine) {
+            if (count($machines) === count($errors)) {
+                if ($machine_finished) {
                     parent::processInput($input);
-                    $machine->reset();
                 } else {
-                    throw $e;
+                    throw new \Exception("We had machines for state(s) " . implode(", ", $this->currentStates) . " but no machine finished");
                 }
             }
         } else {
@@ -47,19 +59,38 @@ class MachineOfMachines extends Machine implements IStateMachine
         } else {
           // If we are at an end state, we need to check the state of the machine.
             try {
-                $machine = $this->getCurrentMachine();
-                return $machine->isCurrentlyAtAnEndState();
+                $finished = false;
+                $machines = [];
+                foreach ($this->getCurrentStates() as $current_state) {
+                    $machine = $this->getStateMachine($current_state);
+                    if ($machine) {
+                        $machines[] = $machine;
+                    }
+                }
+
+                if (empty($machines)) {
+                    $finished = true;
+                } else {
+                    foreach ($machines as $machine) {
+                        if ($machine->isCurrentlyAtAnEndState()) {
+                            $finished = true;
+                        }
+                    }
+                }
+
+                return $finished;
             } catch (\Exception $e) {
                 return true;
             }
         }
     }
 
-    private function getCurrentMachine(): IStateMachine
+    private function getStateMachine($state): ?IStateMachine
     {
-        if (isset($this->machines[$this->currentState])) {
-            return $this->machines[$this->currentState];
+        if (isset($this->machines[$state])) {
+            return $this->machines[$state];
         }
-        throw new \Exception("State {$this->currentState} does not have a machine.");
+
+        return null;
     }
 }
