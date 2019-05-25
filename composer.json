@@ -1,5 +1,6 @@
 {
     "name": "fmizzell/maquina",
+    "description": "A state machine implementation.",
     "type": "library",
     "license": "GPL-3.0-only",
     "authors": [
