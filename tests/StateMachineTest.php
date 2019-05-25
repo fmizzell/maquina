@@ -21,7 +21,6 @@ class StateMachineTest extends \PHPUnit\Framework\TestCase
         $machine->addTransition("Locked", ["Coin"], "Un-locked");
         $machine->addTransition("Un-locked", ["Coin"], "Un-locked");
         $machine->addTransition("Un-locked", ["Push"], "Locked");
-        $machine->noCapture();
 
         $this->stateMachine = $machine;
     }
@@ -47,8 +46,6 @@ class StateMachineTest extends \PHPUnit\Framework\TestCase
 
         $sm->processInput("Push");
         $this->assertEquals("Locked", $sm->getCurrentStates()[0]);
-
-        $this->assertEmpty($sm->getMatch());
     }
 }
 

@@ -19,7 +19,6 @@ class BuilderTest extends \PHPUnit\Framework\TestCase
         $machine = mb::s("SELECT");
         mf::feed("SELECT", $machine);
         $this->assertTrue($machine->isCurrentlyAtAnEndState());
-        $this->assertEquals("SELECT", $machine->getMatch());
     }
 
     public function testStringMachineEndState()

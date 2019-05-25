@@ -13,8 +13,10 @@ class MachineOfMachinesTest extends \PHPUnit\Framework\TestCase
     private function getSelectMeMachine()
     {
         $machine = new MachineOfMachines(['select']);
+
         $machine->addMachine('select', mb::s("SELECT"));
         $machine->addMachine('me', mb::s("ME"));
+
         $machine->addTransition('select', [" "], 'me');
         $machine->addEndState('me');
         return $machine;

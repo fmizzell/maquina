@@ -85,12 +85,20 @@ class MachineOfMachines extends Machine implements IStateMachine
         }
     }
 
-    private function getStateMachine($state): ?IStateMachine
+    public function getStateMachine($state): ?IStateMachine
     {
         if (isset($this->machines[$state])) {
             return $this->machines[$state];
         }
 
         return null;
+    }
+
+  /**
+   * Abbreviation for getStateMachine.
+   */
+    public function gsm($state): ?IStateMachine
+    {
+        return $this->getStateMachine($state);
     }
 }

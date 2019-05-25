@@ -2,8 +2,6 @@
 
 namespace Maquina\StateMachine;
 
-use Maquina\Capture;
-
 /**
  * Class StateMachine.
  *
@@ -12,7 +10,7 @@ use Maquina\Capture;
  */
 class Machine implements IStateMachine
 {
-    use Capture;
+    use Execution;
 
     private $initialStates;
 
@@ -29,7 +27,11 @@ class Machine implements IStateMachine
    */
     public function __construct(array $initial_states)
     {
+        $this->execution = new \SplStack();
         $this->initialStates = $initial_states;
+
+        $this->recordStateExecution($this->initialStates);
+
         $this->currentStates = $this->initialStates;
     }
 
@@ -61,17 +63,17 @@ class Machine implements IStateMachine
    */
     public function processInput(string $input)
     {
-        if ($this->transitionIsValid($input)) {
-            $next_states = $this->getNextStates($input);
-            $this->currentStates = $next_states;
-            $this->handleMatch($input);
 
-            $this->halted = false;
-            foreach ($this->currentStates as $current_state) {
-                if (in_array($current_state, $this->endStates)) {
-                    $this->halted = true;
-                }
-            }
+        if ($this->transitionIsValid($input)) {
+            $this->recordInputExecution($input);
+
+            $next_states = $this->getNextStates($input);
+
+            $this->recordStateExecution($next_states);
+
+            $this->currentStates = $next_states;
+
+            $this->didWeHalt();
         } else {
             throw new \Exception("Invalid Input {$input}");
         }
@@ -79,8 +81,8 @@ class Machine implements IStateMachine
 
     public function reset()
     {
+        $this->recordStateExecution($this->initialStates);
         $this->currentStates = $this->initialStates;
-        $this->resetMatch();
     }
 
     public function getCurrentStates(): array
@@ -88,9 +90,16 @@ class Machine implements IStateMachine
         return $this->currentStates;
     }
 
-  /**
-   * Private.
-   */
+    private function didWeHalt()
+    {
+        $this->halted = false;
+        foreach ($this->currentStates as $current_state) {
+            if (in_array($current_state, $this->endStates)) {
+                $this->halted = true;
+            }
+        }
+    }
+
     private function transitionIsValid($input)
     {
         foreach ($this->currentStates as $current_state) {
@@ -101,9 +110,6 @@ class Machine implements IStateMachine
         return false;
     }
 
-  /**
-   * Private.
-   */
     private function getNextStates($input)
     {
         $next_states = [];
