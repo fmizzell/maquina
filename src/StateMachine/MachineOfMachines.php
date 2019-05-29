@@ -14,13 +14,12 @@ class MachineOfMachines extends Machine implements IStateMachine
     public function processInput(string $input)
     {
         $got_machine = false;
-        $machine_error = false;
         $machine_finished = false;
 
         $machines = [];
         $errors = [];
 
-        foreach ($this->currentStates as $current_state) {
+        foreach ($this->currentStates as $key => $current_state) {
             $machine = $this->getStateMachine($current_state);
             if ($machine) {
                 $machines[] = $machine;
@@ -29,9 +28,13 @@ class MachineOfMachines extends Machine implements IStateMachine
                     $machine->processInput($input);
                 } catch (\Exception $e) {
                     $errors[] = true;
-                  // The current machine could not handle the input... transition.
+
                     if ($machine->isCurrentlyAtAnEndState()) {
                         $machine_finished = true;
+                    } else {
+                        if (count($this->currentStates) > 1) {
+                            unset($this->currentStates[$key]);
+                        }
                     }
                     $machine->reset();
                 }
@@ -43,7 +46,8 @@ class MachineOfMachines extends Machine implements IStateMachine
                 if ($machine_finished) {
                     parent::processInput($input);
                 } else {
-                    throw new \Exception("We had machines for state(s) " . implode(", ", $this->currentStates) . " but no machine finished");
+                    throw new \Exception("We had machines for state(s) " .
+                      implode(", ", $this->currentStates) . " but no machine finished");
                 }
             }
         } else {
