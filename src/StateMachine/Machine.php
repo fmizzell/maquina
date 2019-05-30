@@ -20,14 +20,14 @@ class Machine implements IStateMachine
 
     private $endStates = [];
 
-    private $halted = false;
+    protected $halted = false;
 
   /**
    * Constructor.
    */
     public function __construct(array $initial_states)
     {
-        $this->execution = new \SplStack();
+        $this->execution = [];
         $this->initialStates = $initial_states;
 
         $this->recordStateExecution($this->initialStates);
@@ -73,7 +73,7 @@ class Machine implements IStateMachine
 
             $this->currentStates = $next_states;
 
-            $this->didWeHalt();
+            $this->halted = $this->didWeHalt();
         } else {
             throw new \Exception("Invalid Input {$input}");
         }
@@ -83,6 +83,7 @@ class Machine implements IStateMachine
     {
         $this->recordStateExecution($this->initialStates);
         $this->currentStates = $this->initialStates;
+        $this->halted = false;
     }
 
     public function getCurrentStates(): array
@@ -90,14 +91,15 @@ class Machine implements IStateMachine
         return $this->currentStates;
     }
 
-    private function didWeHalt()
+    protected function didWeHalt()
     {
-        $this->halted = false;
+        $halted = false;
         foreach ($this->currentStates as $current_state) {
             if (in_array($current_state, $this->endStates)) {
-                $this->halted = true;
+                $halted = true;
             }
         }
+        return $halted;
     }
 
     private function transitionIsValid($input)
