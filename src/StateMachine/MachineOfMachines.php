@@ -33,53 +33,6 @@ class MachineOfMachines extends Machine implements IStateMachine
             $this->resetCurrentMachines();
             parent::processInput($input);
         }
-
-      /*$got_machine = false;
-        $machine_finished = false;
-
-        $machines = [];
-        $errors = [];
-
-        foreach ($this->currentStates as $key => $current_state) {
-            $machine = $this->getStateMachine($current_state);
-            if ($machine) {
-                $machines[] = $machine;
-                $got_machine = true;
-                try {
-                    $machine->processInput($input);
-                    $this->halted = $this->didWeHalt();
-                } catch (\Exception $e) {
-                    $errors[] = true;
-
-                    if ($machine->isCurrentlyAtAnEndState()) {
-                        $machine_finished = true;
-                    } else {
-                        if (count($this->currentStates) > 1) {
-                            unset($this->currentStates[$key]);
-                        }
-                    }
-                    $this->halted = $this->didWeHalt();
-                    $machine->reset();
-                }
-            }
-        }
-
-        if ($got_machine) {
-            if (count($machines) === count($errors)) {
-                if ($machine_finished) {
-                    $real_halted = $this->halted;
-                    parent::processInput($input);
-                    $this->halted = $real_halted;
-                } else {
-                    throw new \Exception("We had machines for state(s) " .
-                      implode(", ", $this->currentStates) . " but no machine finished");
-                }
-            }
-        } else {
-            $real_halted = $this->halted;
-            parent::processInput($input);
-            $this->halted = $real_halted;
-        }*/
     }
 
     private function machineHalted()
@@ -131,40 +84,6 @@ class MachineOfMachines extends Machine implements IStateMachine
         }
     }
 
-    /*public function isCurrentlyAtAnEndState(): bool
-    {
-        $is = parent::isCurrentlyAtAnEndState();
-        if ($is === false) {
-            return false;
-        } else {
-          // If we are at an end state, we need to check the state of the machine.
-            try {
-                $finished = false;
-                $machines = [];
-                foreach ($this->getCurrentStates() as $current_state) {
-                    $machine = $this->getStateMachine($current_state);
-                    if ($machine) {
-                        $machines[] = $machine;
-                    }
-                }
-
-                if (empty($machines)) {
-                    $finished = true;
-                } else {
-                    foreach ($machines as $machine) {
-                        if ($machine->isCurrentlyAtAnEndState()) {
-                            $finished = true;
-                        }
-                    }
-                }
-
-                return $finished;
-            } catch (\Exception $e) {
-                return true;
-            }
-        }
-    }*/
-
     public function getStateMachine($state): ?IStateMachine
     {
         if (isset($this->machines[$state])) {
@@ -202,5 +121,33 @@ class MachineOfMachines extends Machine implements IStateMachine
             }
             return $halted;
         }
+    }
+
+    public function jsonSerialize()
+    {
+        $smo = parent::jsonSerialize();
+        $smo->machines = $this->machines;
+        return $smo;
+    }
+
+    public static function hydrate(string $json, $machine)
+    {
+        $data = json_decode($json);
+        $machines = (array) $data->machines;
+        unset($data->machines);
+      /** @var  $machine MachineOfMachines */
+        $machine = Machine::hydrate(json_encode($data), $machine);
+
+        foreach ($machines as $state => $data) {
+            $inner_machine = $machine->getStateMachine($state);
+            if (get_class($inner_machine) == Machine::class) {
+                $inner_machine = Machine::hydrate(json_encode($data), $inner_machine);
+            } else {
+                $inner_machine = MachineOfMachines::hydrate(json_encode($data), $inner_machine);
+            }
+            $machine->addMachine($state, $inner_machine);
+        }
+
+        return $machine;
     }
 }

@@ -47,6 +47,27 @@ class StateMachineTest extends \PHPUnit\Framework\TestCase
         $sm->processInput("Push");
         $this->assertEquals("Locked", $sm->getCurrentStates()[0]);
     }
+
+    public function testSerialization()
+    {
+        $sm = $this->stateMachine;
+        $virgin = clone $sm;
+
+        $sm->processInput("Push");
+        $this->assertEquals("Locked", $sm->getCurrentStates()[0]);
+
+        $sm->processInput("Coin");
+        $this->assertEquals("Un-locked", $sm->getCurrentStates()[0]);
+
+        $json = json_encode($sm);
+        $sm2 = Machine::hydrate($json, $virgin);
+
+        $sm2->processInput("Coin");
+        $this->assertEquals("Un-locked", $sm2->getCurrentStates()[0]);
+
+        $sm2->processInput("Push");
+        $this->assertEquals("Locked", $sm2->getCurrentStates()[0]);
+    }
 }
 
 // @codingStandardsIgnoreStart

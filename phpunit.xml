@@ -5,7 +5,7 @@
 
     <testsuites>
         <testsuite name="all">
-            <directory suffix="Test.php" phpVersion="7.2" phpVersionOperator=">=">tests</directory>
+            <directory suffix="Test.php" phpVersion="7.2" phpVersionOperator=">=">test</directory>
         </testsuite>
     </testsuites>
 

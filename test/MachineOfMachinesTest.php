@@ -60,6 +60,19 @@ class MachineOfMachinesTest extends \PHPUnit\Framework\TestCase
         }
     }
 
+    public function testSerialization()
+    {
+        $machine = $this->getSqlMachine();
+        Feeder::feed('[SELECT * FROM abc][WHERE d', $machine);
+        $this->assertFalse($machine->isCurrentlyAtAnEndState());
+
+        $json = json_encode($machine);
+        $machine2 = MachineOfMachines::hydrate($json, $this->getSqlMachine());
+
+        Feeder::feed('ef = "hij"];', $machine2);
+        $this->assertTrue($machine2->isCurrentlyAtAnEndState());
+    }
+
     private function getSqlMachine()
     {
         $machine = new MachineOfMachines(['select_start']);
