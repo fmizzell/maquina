@@ -8,7 +8,7 @@ namespace Maquina\StateMachine;
  * Implementation of a
  * [state machine](https://en.wikipedia.org/wiki/Finite-state_machine)
  */
-class Machine implements IStateMachine
+class Machine implements IStateMachine, \JsonSerializable
 {
     use Execution;
 
@@ -124,5 +124,27 @@ class Machine implements IStateMachine
         }
 
         return $next_states;
+    }
+
+    public function jsonSerialize()
+    {
+        return (object) ['currentStates' => $this->currentStates, 'halted' => $this->halted];
+    }
+
+    public static function hydrate(string $json, $machine)
+    {
+        $data = (array) json_decode($json);
+        $class = new \ReflectionClass(get_class($machine));
+        if (get_class($machine) != self::class) {
+            $class = $class->getParentClass();
+        }
+
+        foreach ($data as $property_name => $value) {
+            $property = $class->getProperty($property_name);
+            $property->setAccessible(true);
+            $property->setValue($machine, $value);
+        }
+
+        return $machine;
     }
 }
