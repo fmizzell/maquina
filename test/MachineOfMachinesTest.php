@@ -71,6 +71,11 @@ class MachineOfMachinesTest extends \PHPUnit\Framework\TestCase
 
         Feeder::feed('ef = "hij"];', $machine2);
         $this->assertTrue($machine2->isCurrentlyAtAnEndState());
+
+        $json = json_encode($machine2);
+        $machine3 = MachineOfMachines::hydrate($json, $this->getSqlMachine());
+        // Halting state is being recovered correctly.
+        $this->assertTrue($machine3->isCurrentlyAtAnEndState());
     }
 
     private function getSqlMachine()

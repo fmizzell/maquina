@@ -60,7 +60,7 @@ class StateMachineTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals("Un-locked", $sm->getCurrentStates()[0]);
 
         $json = json_encode($sm);
-        $sm2 = Machine::hydrate($json, $virgin);
+        $sm2 = Machine::hydrate($json, clone $virgin);
 
         $sm2->processInput("Coin");
         $this->assertEquals("Un-locked", $sm2->getCurrentStates()[0]);
