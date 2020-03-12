@@ -54,4 +54,13 @@ class NonDeterministicStateMachineTest extends \PHPUnit\Framework\TestCase
         $machine = $this->stateMachine;
         \Maquina\Feeder::feed("acdd", $machine);
     }
+
+    public function testStoppingAndStartingExecutionRecording()
+    {
+        $machine = $this->stateMachine;
+        $machine->stopRecording();
+        \Maquina\Feeder::feed("abd", $machine);
+        $machine->startRecording();
+        $this->assertTrue($machine->isCurrentlyAtAnEndState());
+    }
 }
