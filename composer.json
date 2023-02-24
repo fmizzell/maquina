@@ -29,6 +29,8 @@
         "post-update-cmd": [
             "sh ./vendor/bugatino/phpcs-git-pre-commit/src/setup.sh"
         ],
-        "test": "./vendor/bin/phpunit"
+        "test": "./vendor/bin/phpunit",
+        "phpcbf": "./vendor/bin/phpcbf",
+        "phpcs": "./vendor/bin/phpcs"
     }
 }

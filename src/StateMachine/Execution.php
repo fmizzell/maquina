@@ -7,7 +7,7 @@ trait Execution
 {
     public $execution;
 
-    private $recordsData = TRUE;
+    private $recordsData = true;
 
     private function recordStateExecution($next_states)
     {
@@ -30,12 +30,13 @@ trait Execution
         array_push($this->execution, $inputs);
     }
 
-    public function startRecording() {
-        $this->recordsData = TRUE;
+    public function startRecording()
+    {
+        $this->recordsData = true;
     }
 
-    public function stopRecording() {
-        $this->recordsData = FALSE;
+    public function stopRecording()
+    {
+        $this->recordsData = false;
     }
-
 }
