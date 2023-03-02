@@ -126,6 +126,7 @@ class Machine implements IStateMachine, \JsonSerializable
         return $next_states;
     }
 
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return (object) ['currentStates' => $this->currentStates, 'halted' => $this->halted];

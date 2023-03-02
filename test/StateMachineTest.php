@@ -12,7 +12,7 @@ class StateMachineTest extends \PHPUnit\Framework\TestCase
    */
     private $stateMachine;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
