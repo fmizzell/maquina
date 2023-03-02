@@ -1,26 +1,24 @@
-version: 2.0
+version: 2.1
 jobs:
   build:
+    docker:
+      - image: circleci/php:7.3
     environment:
       CC_TEST_REPORTER_ID: 046306f1c19fc2f7fed36593c4676c2f8073be56f66566dbbef97e8881b7ec6d
-    docker:
-      - image: circleci/php:7-cli-node-browsers-legacy
+      XDEBUG_MODE: coverage
     working_directory: ~/repo
     steps:
       - checkout
       - run:
-          name: Setup dependencies
-          command: |
-            sudo composer self-update
-            composer install -n --prefer-dist
-      - run:
-          name: Setup Code Climate test-reporter
+          name: Set up Code Climate test-reporter
           command: |
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
       - run:
           name: Run tests
           command: |
+            composer install
             ./cc-test-reporter before-build
-            vendor/bin/phpunit --testsuite all --coverage-clover clover.xml
+            ./vendor/bin/phpunit --testsuite all --coverage-clover clover.xml
+            sed -i 's+/var/www/html/+/home/circleci/repo/+g' clover.xml
             ./cc-test-reporter after-build --coverage-input-type clover --exit-code $?
